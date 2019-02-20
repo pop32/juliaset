@@ -81,20 +81,34 @@ public class JuliaSetView extends View implements View.OnClickListener, View.OnT
             if (isCalc) {
                 return;
             }
-            if (eTouchEvent == TouchEvent.doubleJuliaSet) {
-                eTouchEvent = TouchEvent.nothing;
-                if (drawOrder == null) {
+            try {
+                if (eTouchEvent == TouchEvent.doubleJuliaSet) {
+                    eTouchEvent = TouchEvent.nothing;
+                    if (drawOrder == null) {
+                        drawOrder = new DrawOrder();
+                        Thread t1 = new Thread(drawOrder);
+                        t1.run();
+//                        t1.start();
+//                        t1.join();
+                    }
+                    drawOrder.touchXY(touchX, touchY);
+                    Thread t2 = new Thread(drawOrder);
+                    t2.run();
+//                    t2.start();
+//                    t2.join();
+
+                } else if (eTouchEvent == TouchEvent.newJuliaSet) {
+                    eTouchEvent = TouchEvent.nothing;
                     drawOrder = new DrawOrder();
-                    new Thread(drawOrder).start();
-                    return;
+                    Thread t3 = new Thread(drawOrder);
+                    t3.run();
+//                    t3.start();
+//                    t3.join();
                 }
-                drawOrder.touchXY(touchX, touchY);
-                new Thread(drawOrder).start();
-            } else if (eTouchEvent == TouchEvent.newJuliaSet) {
-                eTouchEvent = TouchEvent.nothing;
-                drawOrder = new DrawOrder();
-                new Thread(drawOrder).start();
+            } catch (Exception ex) {
+
             }
+            invalidate();
         }
 
         Log.d(JuliaSetView.class.getName(), "onClick end:");
@@ -197,25 +211,29 @@ public class JuliaSetView extends View implements View.OnClickListener, View.OnT
                 Log.d(JuliaSetView.class.getName(), "run ar:" + ar);
                 Log.d(JuliaSetView.class.getName(), "run ai:" + ai);
 
-                Thread t1 = new Thread(new CalcJuliaSet(0,0,juliaSetScreenSize,juliaSetScreenSize/2
+                Thread t1 = new Thread(new CalcJuliaSet(0,0,juliaSetScreenSize,juliaSetScreenSize
                         ,m_XMin,m_YMin,m_XMax,m_YMax
                         ,juliaSetScreenSize,juliaSetScreenSize,ar,ai,pix));
 
-                Thread t2 = new Thread(new CalcJuliaSet(0,juliaSetScreenSize/2,juliaSetScreenSize,juliaSetScreenSize
-                        ,m_XMin,m_YMin,m_XMax,m_YMax
-                        ,juliaSetScreenSize,juliaSetScreenSize,ar,ai,pix));
+//                Thread t1 = new Thread(new CalcJuliaSet(0,0,juliaSetScreenSize,juliaSetScreenSize/2
+//                        ,m_XMin,m_YMin,m_XMax,m_YMax
+//                        ,juliaSetScreenSize,juliaSetScreenSize,ar,ai,pix));
 
-                t1.start();
-                t2.start();
-                try {
-                    t1.join();
-                    t2.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                Thread t2 = new Thread(new CalcJuliaSet(0,juliaSetScreenSize/2,juliaSetScreenSize,juliaSetScreenSize
+//                        ,m_XMin,m_YMin,m_XMax,m_YMax
+//                        ,juliaSetScreenSize,juliaSetScreenSize,ar,ai,pix));
+                  t1.run();
+//                t1.start();
+//                t2.start();
+//                try {
+//                    t1.join();
+//                    t2.join();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
                 isCalc = false;
 
-                invalidate();
+                //invalidate();
                 Log.d(JuliaSetView.class.getName(), "onClick calc end");
             }
 
