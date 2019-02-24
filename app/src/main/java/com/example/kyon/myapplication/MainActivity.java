@@ -9,7 +9,7 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        JuliaSetView view = new JuliaSetView(this);
+        JuliaSetTestView view = new JuliaSetTestView(this);
         setContentView(view);
     }
 }
