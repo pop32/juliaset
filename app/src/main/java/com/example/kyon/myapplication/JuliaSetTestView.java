@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.Random;
 
@@ -95,6 +96,46 @@ public class JuliaSetTestView extends View implements View.OnTouchListener {
         }
     }
 
+    private void juliasetJavaBC(int[] cnt_arr, int w, int h, double ar, double ai) {
+        final int scale = 60;
+        final int div_mode = BigDecimal.ROUND_CEILING;
+        final BigDecimal bc_ar=BigDecimal.valueOf(ar);
+        final BigDecimal bc_ai=BigDecimal.valueOf(ai);
+        final BigDecimal bc_w=BigDecimal.valueOf(w);
+        final BigDecimal bc_h=BigDecimal.valueOf(h);
+        final BigDecimal bc_zr_min=BigDecimal.valueOf(-2.0);
+        final BigDecimal bc_zi_min=BigDecimal.valueOf(-2.0);
+        final BigDecimal bc_zr_max=BigDecimal.valueOf(2.0);
+        final BigDecimal bc_zi_max=BigDecimal.valueOf(2.0);
+        final BigDecimal bc_dx = bc_zr_max.subtract(bc_zr_min).divide(bc_w, scale, div_mode);
+        final BigDecimal bc_dy = bc_zi_max.subtract(bc_zi_min).divide(bc_h, scale, div_mode);
+        final BigDecimal bc_two = BigDecimal.valueOf(2);
+        double val;
+        int x,y,cnt;
+        BigDecimal zr,zi,wr,wi;
+        for (y = 0; y < h; y++) {
+            for (x = 0; x < w; x++) {
+                BigDecimal bc_x = BigDecimal.valueOf(x);
+                BigDecimal bc_y = BigDecimal.valueOf(y);
+                BigDecimal bc_zr = bc_x.multiply(bc_dx).add(bc_zr_min).setScale(scale,div_mode);
+                BigDecimal bc_zi = bc_y.multiply(bc_dy).add(bc_zi_min).setScale(scale,div_mode);
+                cnt = 0;
+                do {
+                    BigDecimal bc_wr = bc_zr.add(bc_zi).multiply(bc_zr.subtract(bc_zi)).add(bc_ar).setScale(scale,div_mode);
+                    BigDecimal bc_wi = bc_two.multiply(bc_zr).multiply(bc_zi).add(bc_ai).setScale(scale,div_mode);
+                    val = bc_wr.pow(2).add(bc_wi.pow(2)).doubleValue();
+                    bc_zr = bc_wr;
+                    bc_zi = bc_wi;
+                    if (cnt++ > 64) {
+                        cnt = -1;
+                        break;
+                    }
+                } while (val < 4);
+                cnt_arr[(y*w)+(x)] = cnt;
+            }
+        }
+    }
+
 //    @Override
 //    public void onClick(View v) {
 //        Log.d(JuliaSetTestView.class.getName(), "onClick start:");
@@ -151,14 +192,20 @@ public class JuliaSetTestView extends View implements View.OnTouchListener {
         int[] test = new int[juliaSetScreenSize*juliaSetScreenSize];
 
         startMSec = System.currentTimeMillis();
-        HelloJni(test,juliaSetScreenSize,juliaSetScreenSize,0.5,0.5);
+        //HelloJni(test,juliaSetScreenSize,juliaSetScreenSize,0.5,0.5);
         endMSec = System.currentTimeMillis();
         canvasBuf.drawText("jni :" + String.valueOf(endMSec-startMSec) + "ms", 10,50, paint);
 
         startMSec = System.currentTimeMillis();
-        juliasetJava(test,juliaSetScreenSize,juliaSetScreenSize,0.5,0.5);
+        //juliasetJava(test,juliaSetScreenSize,juliaSetScreenSize,0.5,0.5);
         endMSec = System.currentTimeMillis();
         canvasBuf.drawText("java:" + String.valueOf(endMSec-startMSec) + "ms", 10,110, paint);
+
+        startMSec = System.currentTimeMillis();
+        //juliasetJavaBC(test,juliaSetScreenSize,juliaSetScreenSize,0.5,0.5);
+        juliasetJavaBC(test,128,128,0.5,0.5);
+        endMSec = System.currentTimeMillis();
+        canvasBuf.drawText("java:" + String.valueOf(endMSec-startMSec) + "ms", 10,170, paint);
 
         invalidate();
         return false;
